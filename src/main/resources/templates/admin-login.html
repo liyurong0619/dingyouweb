@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>後台登入</title>
+    <style>
+        body { 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            background-color: #f8f9fa; 
+            padding: 50px; 
+            text-align: center;
+         }
+
+        form { 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 8px;
+            display: inline-block; 
+        }
+
+        input { 
+            display: block; 
+            margin: 10px auto; 
+            padding: 8px; 
+            width: 200px; 
+        }
+
+        button { 
+            padding: 8px 20px; 
+        }
+
+        .error { 
+            color: red; 
+        }
+        
+    </style>
+</head>
+<body>
+    <h2>後台登入</h2>
+    <form method="post" action="/admin/login">
+        <label>帳號</label>
+        <input type="text" name="account" required>
+        <label>密碼</label>
+        <input type="password" name="password" required>
+        <button type="submit">登入</button>
+    </form>
+
+    <!-- 顯示錯誤訊息 -->
+    <div class="error">
+        <!-- 用 URL query 參數判斷 -->
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                document.write('帳號或密碼錯誤');
+            }
+        </script>
+    </div>
+</body>
+</html>

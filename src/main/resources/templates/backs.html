@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>商品後台管理</title>
+
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    input, select, textarea {
+      margin: 5px 0;
+      display: block;
+      width: 300px;
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    textarea {
+      height: 80px;
+    }
+
+    button {
+      padding: 6px 14px;
+      cursor: pointer;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #ccc;
+      padding: 8px;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    img {
+      width: 80px;
+      height: 80px;          
+      object-fit: contain;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .form-row {
+      margin-bottom: 12px;
+    }
+
+    button[type="submit"] {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>新增廠商</h2>
+<input type="text" id="vendor-name-input" placeholder="輸入廠商名稱">
+<input type="file" id="vendor-logo-input" accept="image/*">
+<button id="add-vendor-btn">新增廠商</button>
+
+<h2>新增商品</h2>
+<form id="product-form" enctype="multipart/form-data">
+
+  <div class="form-row">
+    廠商：
+    <select id="vendor-select" name="vendorName">
+      <option value="">請選擇廠商</option>
+    </select>
+  </div>
+
+  <div class="form-row">名稱：<input type="text" name="name"></div>
+  <div class="form-row">價格：<input type="number" name="price" step="0.01"></div>
+  <div class="form-row">庫存：<input type="number" name="stock"></div>
+  <div class="form-row">描述：<textarea name="description"></textarea></div>
+  <div class="form-row">品牌：<input type="text" name="brand"></div>
+  <div class="form-row">規格：<input type="text" name="spec"></div>
+  <div class="form-row">產品編號：<input type="text" name="code"></div>
+  <div class="form-row">圖片：<input type="file" name="image" accept="image/*"></div>
+  <div class="form-row">PDF：<input type="file" name="pdf"></div>
+
+  <div class="form-row">
+    <button type="submit">新增商品</button>
+  </div>
+</form>
+
+<h2>廠商清單</h2>
+<table id="vendor-table">
+  <thead>
+    <tr>
+      <th>圖片</th>
+      <th>廠商名稱</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>商品清單</h2>
+<table id="product-table">
+  <thead>
+    <tr>
+      <th>圖片</th>
+      <th>廠商</th>
+      <th>產品名稱</th>
+      <th>產品品名</th>
+      <th>產品規格</th>
+      <th>產品編號</th>
+      <th>價格</th>
+      <th>庫存</th>
+      <th>產品描述</th>
+      <th>PDF</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+/* =============================
+   基本設定（自動抓 IP / Domain）
+============================= */
+const API_BASE = location.origin;
+const UPLOAD_BASE = `${API_BASE}/uploads`;
+const NO_IMAGE = `${UPLOAD_BASE}/no-image.png`;
+
+/* =============================
+   DOM
+============================= */
+const vendorInput = document.getElementById("vendor-name-input");
+const vendorLogoInput = document.getElementById("vendor-logo-input");
+const addVendorBtn = document.getElementById("add-vendor-btn");
+const vendorSelect = document.getElementById("vendor-select");
+
+/* =============================
+   工具：圖片網址產生器（支援新舊資料）
+============================= */
+function buildImageUrl(filename) {
+
+  if (!filename) return NO_IMAGE;
+
+  // 已是完整網址
+  if (filename.startsWith("http://") || filename.startsWith("https://")) {
+    return filename;
+  }
+
+  // 已是 /uploads/xxx
+  if (filename.startsWith("/uploads/")) {
+    return API_BASE + filename;
+  }
+
+  //  相容舊資料：images/xxx.png → 直接轉成 uploads/xxx.png
+  if (filename.startsWith("images/")) {
+    filename = filename.replace("images/", "");
+  }
+
+  // 一般檔名（全部在 uploads 根目錄）
+  return `${UPLOAD_BASE}/${filename}`;
+}
+
+/* =============================
+   廠商
+============================= */
+function loadVendors() {
+
+  fetch(`${API_BASE}/api/vendors`)
+    .then(res => res.json())
+    .then(data => {
+
+      let tableHtml = "";
+      let selectHtml = '<option value="">請選擇廠商</option>';
+
+      data.forEach(v => {
+
+        const imgSrc = buildImageUrl(v.logoFilename);
+
+        selectHtml += `<option value="${v.name}">${v.name}</option>`;
+
+        tableHtml += `
+          <tr>
+            <td>
+              <img src="${imgSrc}"
+                   loading="lazy"
+                   onerror="this.onerror=null;this.src='${NO_IMAGE}'">
+            </td>
+            <td>${v.name}</td>
+            <td>
+              <button onclick="deleteVendor(${v.id})">刪除</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      vendorSelect.innerHTML = selectHtml;
+      document.querySelector("#vendor-table tbody").innerHTML = tableHtml;
+    });
+}
+
+/* =============================
+   新增廠商
+============================= */
+addVendorBtn.onclick = () => {
+
+  if (!vendorInput.value.trim()) {
+    alert("請輸入廠商名稱");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", vendorInput.value.trim());
+
+  if (vendorLogoInput.files.length > 0) {
+    formData.append("logo", vendorLogoInput.files[0]);
+  }
+
+  fetch(`${API_BASE}/api/vendors/add`, {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(r => {
+
+    if (r.success) {
+      vendorInput.value = "";
+      vendorLogoInput.value = "";
+      loadVendors();
+    } else {
+      alert(r.message || "新增失敗");
+    }
+  });
+};
+
+/* =============================
+   新增商品
+============================= */
+document.getElementById("product-form").onsubmit = e => {
+
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+
+  if (formData.get("price") === "") formData.delete("price");
+  if (formData.get("stock") === "") formData.delete("stock");
+
+  fetch(`${API_BASE}/api/products/add`, {
+    method: "POST",
+    body: formData
+  })
+  .then(() => {
+    e.target.reset();
+    loadProducts();
+  });
+};
+
+/* =============================
+   商品列表
+============================= */
+function loadProducts() {
+
+  fetch(`${API_BASE}/api/products`)
+    .then(res => res.json())
+    .then(ps => {
+
+      let html = "";
+
+      ps.forEach(p => {
+
+        const imgSrc = buildImageUrl(p.imageFilename);
+
+        html += `
+          <tr>
+            <td>
+              <img src="${imgSrc}"
+                   loading="lazy"
+                   onerror="this.onerror=null;this.src='${NO_IMAGE}'">
+            </td>
+            <td>${p.vendorName}</td>
+            <td>${p.name}</td>
+            <td>${p.brand}</td>
+            <td>${p.spec}</td>
+            <td>${p.code}</td>
+            <td>${p.price ?? ""}</td>
+            <td>${p.stock ?? ""}</td>
+            <td>${p.description ?? ""}</td>
+            <td>
+              ${
+                p.hasPdf
+                ? `<button onclick="downloadPdf(${p.id})">下載 PDF</button>`
+                : "尚未上傳"
+              }
+            </td>
+            <td>
+              <button onclick="deleteProduct(${p.id})">刪除</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.querySelector("#product-table tbody").innerHTML = html;
+    });
+}
+
+/* =============================
+   操作
+============================= */
+function deleteVendor(id, force = false) {
+
+  fetch(`${API_BASE}/api/vendors/delete/${id}?force=${force}`, {
+    method: "DELETE"
+  })
+  .then(res => res.json())
+  .then(r => {
+
+    if (r.success) {
+      loadVendors();
+      loadProducts();
+    }
+    else if (r.needConfirm && confirm(r.message)) {
+      deleteVendor(id, true);
+    }
+  });
+}
+
+function deleteProduct(id) {
+
+  if (!confirm("確定刪除商品？")) return;
+
+  fetch(`${API_BASE}/api/products/delete/${id}`, {
+    method: "DELETE"
+  })
+  .then(loadProducts);
+}
+
+function downloadPdf(id) {
+  window.open(`${API_BASE}/api/products/${id}/download`, "_blank");
+}
+
+/* =============================
+   Init
+============================= */
+loadVendors();
+loadProducts();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>後台總覽</title>
+    <style>
+        body { 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            background-color: #f8f9fa; 
+            margin: 0; padding: 0; 
+        }
+
+        header { 
+            background-color: #343a40; 
+            color: white; 
+            padding: 20px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        header h1 { 
+            margin: 0; 
+            font-size: 24px; 
+        }
+
+        header a.logout-btn { 
+            color: white; 
+            text-decoration: none; 
+            background-color: #dc3545; 
+            padding: 8px 15px; 
+            border-radius: 5px; 
+        }
+
+        header a.logout-btn:hover { 
+            background-color: #a71d2a; 
+        }
+
+        main { 
+            text-align: center; 
+            padding: 60px 20px; 
+        }
+
+        main a.dashboard-btn { 
+            display: block; 
+            width: 250px; 
+            margin: 20px auto; 
+            padding: 15px; 
+            font-size: 18px; 
+            background-color: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 8px; 
+        }
+
+        main a.dashboard-btn:hover { 
+            background-color: #0056b3; 
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <h1>後台總覽</h1>
+        <a href="/admin/logout" class="logout-btn">登出</a>
+    </header>
+
+    <main>
+        <a href="/admin/backs" class="dashboard-btn">產品上架</a>
+        <a href="/admin/news" class="dashboard-btn">公告欄</a>
+        <a href="/admin/information" class="dashboard-btn">客戶訊息</a>
+        <a href="/admin/downloads" class="dashboard-btn">操作手冊上傳</a>
+    </main>
+</body>
+</html>

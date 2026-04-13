@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>📬 聯絡我們收件紀錄</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 40px 60px;
+      color: #333;
+    }
+
+    header {
+      text-align: left;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 5px;
+      font-size: 24px;
+    }
+
+    header p {
+      margin-top: 0;
+      color: #555;
+      font-size: 15px;
+    }
+
+    .record {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 22px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+      line-height: 1.7;
+      border-left: 6px solid #0073b1;
+    }
+
+    .record-date {
+      font-weight: bold;
+      color: #0073b1;
+      margin-bottom: 10px;
+    }
+
+    .record span {
+      display: block;
+      margin: 3px 0;
+    }
+
+    .record strong {
+      width: 90px;
+      display: inline-block;
+      color: #444;
+    }
+
+    .record .message {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      white-space: pre-line;
+    }
+
+    .empty,
+    .loading {
+      text-align: left;
+      color: #777;
+      margin-top: 30px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>聯絡我們留言紀錄</h2>
+    <p>以下列出所有使用者透過表單提交的訊息</p>
+  </header>
+
+  <div id="records-container" class="loading">資料載入中，請稍候...</div>
+
+  <script>
+  const container = document.getElementById("records-container");
+
+  // 從後端抓取所有留言資料
+  async function loadContactMessages() {
+    container.innerHTML = `<div class="loading">資料載入中，請稍候...</div>`;
+
+    try {
+      const response = await fetch("/contact/all");
+
+      if (!response.ok) {
+        throw new Error("伺服器回應異常，狀態碼：" + response.status);
+      }
+
+      const data = await response.json();
+      console.log("從後端取得的資料：", data);
+
+      container.innerHTML = "";
+
+      const messages = Array.isArray(data) ? data : (data.data || []);
+      if (!messages || messages.length === 0) {
+        container.innerHTML = `<div class="empty">目前沒有任何聯絡紀錄</div>`;
+        return;
+      }
+
+      const sorted = messages.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "record";
+
+        // 日期顯示處理
+        let dateText = "（未提供時間）";
+        if (item.date) {
+          const parsed = new Date(item.date);
+          if (!isNaN(parsed.getTime())) {
+            const yyyy = parsed.getFullYear();
+            const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+            const dd = String(parsed.getDate()).padStart(2, "0");
+            const hh = String(parsed.getHours()).padStart(2, "0");
+            const mi = String(parsed.getMinutes()).padStart(2, "0");
+            const ss = String(parsed.getSeconds()).padStart(2, "0");
+            dateText = `${yyyy}/${mm}/${dd} ${hh}:${mi}:${ss}`;
+          }
+        }
+
+        div.innerHTML = `
+          <div class="record-date"> ${dateText}</div>
+          <span><strong>姓名：</strong>${item.name || "未填寫"}</span>
+          <span><strong>性別：</strong>${item.gender || "未填寫"}</span>
+          <span><strong>電話：</strong>${item.phone || "未填寫"}</span>
+          <span><strong>地址：</strong>${item.address || "未填寫"}</span>
+          <span><strong>Email：</strong>${item.email || "未填寫"}</span>
+          <div class="message"><strong>詢問內容：</strong><br>${item.content || "(無內容)"}</div>
+        `;
+
+        container.appendChild(div);
+      });
+
+    } catch (error) {
+      console.error(" 錯誤：", error);
+      container.innerHTML = `<div class="empty">資料載入失敗：${error.message}</div>`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadContactMessages);
+</script>
+
+
+</body>
+</html>
+
