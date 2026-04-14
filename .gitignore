@@ -2,7 +2,7 @@ target/
 *.class
 *.jar
 *.log
-*.sql
 *.zip
 *.pdf
+# *.sql
 node_modules/
