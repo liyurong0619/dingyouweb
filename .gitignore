@@ -80,4 +80,5 @@ Thumbs.db
 # Environment / Secret
 # =========================
 .env
+application.properties
 
