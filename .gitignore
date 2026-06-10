@@ -1,3 +1,4 @@
+
 target/
 *.class
 *.jar
@@ -6,3 +7,77 @@ target/
 *.pdf
 # *.sql
 node_modules/
+=======
+# =========================
+# Spring Boot / Maven
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Database / Backup
+# =========================
+*.sql
+*.db
+
+# =========================
+# Compressed Files
+# =========================
+*.zip
+*.rar
+*.7z
+
+# =========================
+# Upload Files
+# =========================
+uploads/
+uploadfiles/
+
+# User uploaded images / files
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# =========================
+# Node.js
+# =========================
+node_modules/
+
+# =========================
+# IDE / Editor
+# =========================
+
+# VS Code
+.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment / Secret
+# =========================
+.env
+

@@ -33,7 +33,6 @@ public class ProductsController {
         this.service = service;
     }
 
-
     @GetMapping("/vendors")
     public List<VendorCreateDTO> getVendors() {
         return service.getAllVendors();
@@ -54,7 +53,6 @@ public class ProductsController {
         }
         return ResponseEntity.ok(res);
     }
-
 
     @PostMapping("/vendors/update/{id}")
     public ResponseEntity<Map<String, Object>> updateVendor(
@@ -94,7 +92,7 @@ public class ProductsController {
         return ResponseEntity.ok(res);
     }
 
-    /* 商品  */
+    /* 商品 */
 
     @GetMapping("/products")
     public List<ProductListDTO> listProducts(
@@ -104,6 +102,26 @@ public class ProductsController {
             return service.getProductsByVendor(vendor);
         }
         return service.getAllProducts();
+    }
+
+    @GetMapping("/products/search")
+    public List<ProductListDTO> searchProducts(
+            @RequestParam String keyword) {
+        return service.searchProducts(keyword);
+    }
+
+    @PostMapping("/products/sync-es")
+    public ResponseEntity<Map<String, Object>> syncToEs() {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            service.syncAllToEs();
+            res.put("success", true);
+            res.put("message", "同步完成");
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/products/add")
@@ -123,29 +141,28 @@ public class ProductsController {
     }
 
     @GetMapping("/products/{id}/download")
-        public void downloadProduct(
-                @PathVariable Long id,
-                HttpServletResponse response) throws IOException {
-
-            service.downloadProductFile(id, response);
-        }
-@PostMapping("/products/{id}/upload-pdf")
-public ResponseEntity<Map<String, Object>> uploadProductPdf(
-        @PathVariable Long id,
-        @RequestParam("file") MultipartFile file) {
-
-    Map<String, Object> res = new HashMap<>();
-    try {
-        service.uploadProductPdf(id, file);
-        res.put("success", true);
-        res.put("message", "PDF 上傳成功");
-    } catch (Exception e) {
-        res.put("success", false);
-        res.put("message", e.getMessage());
+    public void downloadProduct(
+            @PathVariable Long id,
+            HttpServletResponse response) throws IOException {
+        service.downloadProductFile(id, response);
     }
-    return ResponseEntity.ok(res);
-}
 
+    @PostMapping("/products/{id}/upload-pdf")
+    public ResponseEntity<Map<String, Object>> uploadProductPdf(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+
+        Map<String, Object> res = new HashMap<>();
+        try {
+            service.uploadProductPdf(id, file);
+            res.put("success", true);
+            res.put("message", "PDF 上傳成功");
+        } catch (Exception e) {
+            res.put("success", false);
+            res.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(res);
+    }
 
     @DeleteMapping("/products/delete/{id}")
     public ResponseEntity<Map<String, Object>> deleteProduct(

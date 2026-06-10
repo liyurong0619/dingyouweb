@@ -39,8 +39,11 @@
             <version>8.3.0</version>
             <scope>runtime</scope>
         </dependency>
-
-
+        <!-- Elasticsearch -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
         <!-- Thymeleaf (如果前端用 HTML 可保留，也可以之後拿掉) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

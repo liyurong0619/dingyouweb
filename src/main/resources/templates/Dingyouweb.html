@@ -102,7 +102,7 @@
   }
 
   /* =====================================================
-     商品 / 廠商列表（你最一開始那組）
+     商品 / 廠商列表
      ===================================================== */
   .grid {
     display: flex;
@@ -193,7 +193,7 @@
   padding: 6px 14px;
   font-size: 14px;
   border-radius: 6px;
-  align-self: flex-start; /*  核心：阻止 flex 撐滿 */
+  align-self: flex-start;
 }
 
 /* 把所有灰色按鈕改成藍色 */
@@ -236,7 +236,7 @@
     min-width: 300px;
     display: flex;
     flex-direction: column;
-    z-index: 10;              /*  避免被左邊圖片覆蓋 */
+    z-index: 10;
 }
 
 .product-detail-info h3 {
@@ -255,7 +255,6 @@
     margin: 4px 0;
 }
 
-/*  PDF / 返回按鈕調整 */
 .detail-action-btn {
     display: inline-flex !important;
     align-items: center;
@@ -263,8 +262,8 @@
     padding: 6px 14px;
     font-size: 14px;
     border-radius: 6px;
-    align-self: flex-start;   /*  阻止 flex 撐滿 */
-    z-index: 20;              /*  確保按鈕在最上層 */
+    align-self: flex-start;
+    z-index: 20;
     cursor: pointer;
 }
 
@@ -422,6 +421,81 @@
     justify-content: space-between;
     align-items: center;
   }
+
+  /* =====================================================
+     搜索欄位
+     ===================================================== */
+  .products-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .products-header h2 {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .products-header .search-box-wrapper {
+    margin-left: auto;
+  }
+
+  .search-box-wrapper {
+    position: relative;
+    width: 280px;
+  }
+
+  .search-box-wrapper svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    pointer-events: none;
+  }
+
+  #product-search {
+    width: 100%;
+    padding: 9px 14px 9px 38px;
+    border: 1.5px solid #d0dce8;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f8fbfe;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  #product-search:focus {
+    border-color: #0073b1;
+    box-shadow: 0 0 0 3px rgba(0,115,177,0.12);
+    background: #fff;
+  }
+
+  #product-search::placeholder {
+    color: #aab4be;
+  }
+
+  .search-no-result {
+    width: 100%;
+    padding: 40px 0;
+    text-align: center;
+    color: #888;
+    font-size: 15px;
+    display: none;
+  }
+
+  .search-section-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0073b1;
+    letter-spacing: 0.03em;
+    margin: 8px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #d0e8f5;
+  }
 </style>
 
 </head>
@@ -432,8 +506,6 @@
         <img id="logo-img" src="" alt="Logo" class="logo-img">
         <div class="logo">鼎悠企業有限公司</div>
     </div>
-
-
 
   <nav>
     <a href="#" data-page="about">關於我們</a>
@@ -462,20 +534,40 @@
 <!-- ===== 產品介紹（三層式） ===== -->
 <div id="products" class="page active">
 
-  <!-- 標題 & 返回按鈕 -->
-  <h2 id="page-title">廠商分類</h2>
-  <div id="backBtn"
-       class="btn btn-secondary mb-3 detail-action-btn"
-       style="display:none;"
-       onclick="loadVendors()">
-    ← 返回廠商列表
+  <!-- 標題列：標題 + 搜索欄 -->
+  <div class="products-header">
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <h2 id="page-title" style="margin-bottom:0;">廠商分類</h2>
+      <div id="backBtn"
+           class="btn btn-secondary detail-action-btn"
+           style="display:none;"
+           onclick="loadVendors()">
+        ← 返回廠商列表
+      </div>
+    </div>
+
+    <!-- 搜索欄（詳細頁隱藏） -->
+    <div class="search-box-wrapper" id="search-wrapper">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="product-search" placeholder="搜尋廠商或產品…"
+             oninput="handleSearch(this.value)">
+    </div>
   </div>
+
+  <!-- 找不到結果提示 -->
+  <div class="search-no-result" id="search-no-result">找不到符合「<span id="search-keyword"></span>」的結果。</div>
 
   <!-- 第一層：廠商列表 -->
   <div id="vendor-list" class="row g-4"></div>
 
   <!-- 第二層：商品列表 -->
   <div id="product-list" class="row g-4" style="display:none;"></div>
+
+  <!-- 搜尋結果（全域） -->
+  <div id="search-results" style="display:none;"></div>
 
   <!-- 第三層：商品詳細 -->
   <div id="product-detail" style="display:none;">
@@ -595,7 +687,7 @@
 
     </form>
 
-    <!-- 🔹右邊 Google 地圖 -->
+    <!-- 右邊 Google 地圖 -->
     <div class="contact-map">
      <iframe
       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3683.071590513512!2d120.64590277634971!3d24.157113878387464!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34693d8fe7cc0c5b%3A0x4adacf680cfb9e0!2z6bm_5a6J5ZWG5aSn5a245ZyL6Zqb5ZCI5pWZ5a6k!5e0!3m2!1szh-TW!2stw!4v1732178130000!5m2!1szh-TW!2stw"
@@ -711,45 +803,187 @@ function setText(id, value) {
 }
 
 /* =============================================================
+   搜尋狀態
+   ============================================================= */
+let currentView = "vendor";
+let cachedVendors = null;
+let cachedAllProducts = null;
+let cachedProducts = {};
+let currentVendorName = null;
+
+/* =============================================================
+   全域搜索處理
+   ============================================================= */
+/* =============================================================
+   全域搜索處理
+   ============================================================= */
+let searchDebounceTimer = null;
+
+async function handleSearch(keyword) {
+  const kw = keyword.trim();
+  const noResult = document.getElementById("search-no-result");
+  const kwSpan = document.getElementById("search-keyword");
+
+  if (!kw) {
+    noResult.style.display = "none";
+    if (currentView === "search") {
+      currentView = "vendor";
+      pageTitle("廠商分類");
+      document.getElementById("vendor-list").style.display = "flex";
+      document.getElementById("product-list").style.display = "none";
+      document.getElementById("search-results").style.display = "none";
+    }
+    return;
+  }
+
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(async () => {
+
+    currentView = "search";
+    pageTitle(`搜尋「${kw}」`);
+    document.getElementById("vendor-list").style.display = "none";
+    document.getElementById("product-list").style.display = "none";
+    document.getElementById("product-detail").style.display = "none";
+
+    const sr = document.getElementById("search-results");
+    sr.style.display = "block";
+    sr.innerHTML = `<p style="color:#888;font-size:14px;">搜尋中…</p>`;
+
+    // 廠商本地過濾
+    if (!cachedVendors) {
+      const res = await fetch(`${API_BASE}/api/vendors`);
+      cachedVendors = await res.json();
+    }
+    const matchedVendors = cachedVendors.filter(v =>
+      v.name.toLowerCase().includes(kw.toLowerCase())
+    );
+
+    // 產品走 Elasticsearch
+    let matchedProducts = [];
+    try {
+      const res = await fetch(`${API_BASE}/api/products/search?keyword=${encodeURIComponent(kw)}`);
+      matchedProducts = await res.json();
+    } catch (e) {
+      console.error("ES 搜尋失敗", e);
+    }
+
+    sr.innerHTML = "";
+    const total = matchedVendors.length + matchedProducts.length;
+
+    if (total === 0) {
+      kwSpan.textContent = kw;
+      noResult.style.display = "block";
+      return;
+    }
+    noResult.style.display = "none";
+
+    if (matchedVendors.length > 0) {
+      const label = document.createElement("p");
+      label.className = "search-section-label";
+      label.textContent = `廠商（${matchedVendors.length} 筆）`;
+      sr.appendChild(label);
+
+      const vendorRow = document.createElement("div");
+      vendorRow.className = "row g-4 mb-4";
+      matchedVendors.forEach(v => {
+        const img = buildImageUrl(v.logoFilename);
+        vendorRow.innerHTML += `
+          <div class="col-md-4">
+            <div class="card h-100 shadow-sm" style="cursor:pointer;"
+                 onclick="clearSearchAndGo('${v.name}')">
+              <img src="${img}" class="product-img" onerror="this.src='${NO_IMAGE}'">
+              <div class="card-body text-center"><h5>${v.name}</h5></div>
+            </div>
+          </div>`;
+      });
+      sr.appendChild(vendorRow);
+    }
+
+    if (matchedProducts.length > 0) {
+      const label = document.createElement("p");
+      label.className = "search-section-label";
+      label.textContent = `產品（${matchedProducts.length} 筆）`;
+      sr.appendChild(label);
+
+      const productRow = document.createElement("div");
+      productRow.className = "row g-4";
+      matchedProducts.forEach(p => {
+        const img = buildImageUrl(p.imageFilename);
+        productRow.innerHTML += `
+          <div class="col-md-4">
+            <div class="card h-100 shadow-sm" style="cursor:pointer;"
+                 onclick="loadProductDetailById(${p.id})">
+              <img src="${img}" class="product-img" onerror="this.src='${NO_IMAGE}'">
+              <div class="card-body text-center">
+                <h5>${p.name}</h5>
+                <span style="display:inline-block;background:#e8f3fb;color:#0073b1;font-size:12px;font-weight:500;border-radius:4px;padding:3px 8px;margin-top:4px;">${p.vendorName || ""}</span>
+              </div>
+            </div>
+          </div>`;
+      });
+      sr.appendChild(productRow);
+    }
+
+  }, 300);
+}
+
+function clearSearchAndGo(vendorName) {
+  document.getElementById("product-search").value = "";
+  document.getElementById("search-no-result").style.display = "none";
+  document.getElementById("search-results").style.display = "none";
+  loadProductsByVendor(vendorName);
+}
+
+/* =============================================================
    第一層：廠商
    ============================================================= */
 function loadVendors(push = true) {
-
   if (push) history.pushState({ page: "vendor" }, "", "#vendors");
 
+  currentView = "vendor";
+  currentVendorName = null;
   pageTitle("廠商分類");
   toggleView("vendor");
+  clearSearch();
+
+  if (cachedVendors) {
+    renderVendorCards(cachedVendors);
+    return;
+  }
 
   fetch(`${API_BASE}/api/vendors`)
     .then(res => res.json())
     .then(vendors => {
-      const container = document.getElementById("vendor-list");
-      container.innerHTML = "";
-
-      vendors.forEach(v => {
-        const img = buildImageUrl(v.logoFilename);
-
-        container.innerHTML += `
-          <div class="col-md-4">
-            <div class="card h-100 shadow-sm" style="cursor:pointer;"
-                 onclick="loadProductsByVendor('${v.name}')">
-              <img src="${img}" class="product-img"
-                   onerror="this.src='${NO_IMAGE}'">
-              <div class="card-body text-center">
-                <h5>${v.name}</h5>
-              </div>
-            </div>
-          </div>
-        `;
-      });
+      cachedVendors = vendors;
+      renderVendorCards(vendors);
     });
+}
+
+function renderVendorCards(vendors) {
+  const container = document.getElementById("vendor-list");
+  container.innerHTML = "";
+
+  vendors.forEach(v => {
+    const img = buildImageUrl(v.logoFilename);
+    container.innerHTML += `
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm" style="cursor:pointer;"
+             onclick="loadProductsByVendor('${v.name}')">
+          <img src="${img}" class="product-img"
+               onerror="this.src='${NO_IMAGE}'">
+          <div class="card-body text-center">
+            <h5>${v.name}</h5>
+          </div>
+        </div>
+      </div>
+    `;
+  });
 }
 
 /* =============================================================
    第二層：商品列表
    ============================================================= */
 function loadProductsByVendor(vendorName, push = true) {
-
   if (push) {
     history.pushState(
       { page: "products", vendor: vendorName },
@@ -758,38 +992,56 @@ function loadProductsByVendor(vendorName, push = true) {
     );
   }
 
+  currentView = "products";
+  currentVendorName = vendorName;
   pageTitle(vendorName);
   toggleView("products");
+  clearSearch();
+
+  if (cachedProducts[vendorName]) {
+    renderProductCards(cachedProducts[vendorName]);
+    return;
+  }
 
   fetch(`${API_BASE}/api/products?vendor=${encodeURIComponent(vendorName)}`)
     .then(res => res.json())
     .then(products => {
-      const container = document.getElementById("product-list");
-      container.innerHTML = "";
-
-      products.forEach(p => {
-        const img = buildImageUrl(p.imageFilename);
-
-        container.innerHTML += `
-          <div class="col-md-4">
-            <div class="card h-100 shadow-sm" style="cursor:pointer;"
-                 onclick="loadProductDetailById(${p.id})">
-              <img src="${img}" class="product-img"
-                   onerror="this.src='${NO_IMAGE}'">
-              <div class="card-body text-center">
-                <h5>${p.name}</h5>
-              </div>
-            </div>
-          </div>
-        `;
-      });
+      cachedProducts[vendorName] = products;
+      renderProductCards(products);
     });
+}
+
+function renderProductCards(products) {
+  const container = document.getElementById("product-list");
+  container.innerHTML = "";
+
+  products.forEach(p => {
+    const img = buildImageUrl(p.imageFilename);
+    container.innerHTML += `
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm" style="cursor:pointer;"
+             onclick="loadProductDetailById(${p.id})">
+          <img src="${img}" class="product-img"
+               onerror="this.src='${NO_IMAGE}'">
+          <div class="card-body text-center">
+            <h5>${p.name}</h5>
+          </div>
+        </div>
+      </div>
+    `;
+  });
 }
 
 /* =============================================================
    商品詳細（透過ID）
    ============================================================= */
 async function loadProductDetailById(id, push = true) {
+  // 先從快取中找
+  for (const key in cachedProducts) {
+    const found = cachedProducts[key].find(x => x.id === id);
+    if (found) { loadProductDetail(found, push); return; }
+  }
+  // 若快取沒有則 fetch
   const res = await fetch(`${API_BASE}/api/products`);
   const list = await res.json();
   const p = list.find(x => x.id === id);
@@ -800,7 +1052,6 @@ async function loadProductDetailById(id, push = true) {
    商品詳細
    ============================================================= */
 function loadProductDetail(p, push = true) {
-
   if (push) {
     history.pushState(
       { page: "detail", id: p.id },
@@ -809,6 +1060,7 @@ function loadProductDetail(p, push = true) {
     );
   }
 
+  currentView = "detail";
   toggleView("detail");
 
   const imgEl = document.getElementById("detail-image");
@@ -848,18 +1100,30 @@ function pageTitle(text) {
     text === "廠商分類" ? "none" : "block";
 }
 
+function clearSearch() {
+  const input = document.getElementById("product-search");
+  if (input) input.value = "";
+  document.getElementById("search-no-result").style.display = "none";
+  document.getElementById("search-results").style.display = "none";
+}
+
 function toggleView(type) {
   document.getElementById("vendor-list").style.display = "none";
   document.getElementById("product-list").style.display = "none";
   document.getElementById("product-detail").style.display = "none";
+  document.getElementById("search-results").style.display = "none";
+  // 搜索欄：詳細頁隱藏
+  document.getElementById("search-wrapper").style.display =
+    type === "detail" ? "none" : "block";
 
-  if (type === "vendor") document.getElementById("vendor-list").style.display = "flex";
+  if (type === "vendor")   document.getElementById("vendor-list").style.display = "flex";
   if (type === "products") document.getElementById("product-list").style.display = "flex";
-  if (type === "detail") document.getElementById("product-detail").style.display = "block";
+  if (type === "detail")   document.getElementById("product-detail").style.display = "block";
+  if (type === "search")   document.getElementById("search-results").style.display = "block";
 }
 
 /* =============================================================
-   🔹 上方選單切頁（保留）
+   上方選單切頁
    ============================================================= */
 const navLinks = document.querySelectorAll("nav a");
 const pages = document.querySelectorAll(".page");
@@ -877,7 +1141,7 @@ navLinks.forEach(link => {
 });
 
 /* =============================================================
-   🔹 聯絡表單（保留）
+   聯絡表單
    ============================================================= */
 const modal = new bootstrap.Modal(document.getElementById("responseModal"));
 const modalMessage = document.getElementById("modalMessage");
@@ -916,7 +1180,7 @@ document.getElementById("contactForm")?.addEventListener("submit", async (e) => 
 });
 
 /* =============================================================
-   🔹 最新消息功能（修正版）
+   最新消息功能
    ============================================================= */
 async function loadNews() {
   const body = document.getElementById("news-body");
@@ -1002,7 +1266,7 @@ function closeModal() {
 }
 
 /* =============================================================
-   🔹 下載專區（保留）
+   下載專區
    ============================================================= */
 async function loadDownloads() {
   const list = document.getElementById("download-list");
@@ -1028,9 +1292,10 @@ async function loadDownloads() {
 }
 
 /* =============================================================
-   🔥 上一頁支援（核心）
+   上一頁支援
    ============================================================= */
 window.onpopstate = function (event) {
+  clearSearch();
 
   if (!event.state) {
     loadVendors(false);
@@ -1045,7 +1310,7 @@ window.onpopstate = function (event) {
 };
 
 /* =============================================================
-   🔹 初始化
+   初始化
    ============================================================= */
 document.addEventListener("DOMContentLoaded", () => {
 

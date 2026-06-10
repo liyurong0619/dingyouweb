@@ -1,0 +1,35 @@
+{
+  "properties": {
+    "name": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "vendorName": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "description": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "spec": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "code": {
+      "type": "keyword"
+    },
+
+    "imageFilename": {
+      "type": "keyword"
+    }
+  }
+}
