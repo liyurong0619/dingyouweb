@@ -102,20 +102,67 @@ MatchPhraseQuery.of(m -> m
       "pinyin_filter": {
         "type": "pinyin",
         "keep_first_letter": true,
+        "keep_separate_first_letter": false,
         "keep_full_pinyin": true,
         "keep_joined_full_pinyin": true,
         "keep_original": true,
+        "limit_first_letter_length": 16,
         "lowercase": true
       }
     },
     "analyzer": {
       "ik_pinyin": {
         "tokenizer": "ik_max_word",
-        "filter": ["lowercase", "pinyin_filter"]
+        "filter": [
+          "lowercase",
+          "pinyin_filter"
+        ]
       }
     }
   }
 }
+```
+
+### Analyzer 設定（es-settings.json）
+
+```json
+
+{
+  "properties": {
+    "name": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "vendorName": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "description": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "spec": {
+      "type": "text",
+      "analyzer": "ik_pinyin",
+      "search_analyzer": "ik_max_word"
+    },
+
+    "code": {
+      "type": "keyword"
+    },
+
+    "imageFilename": {
+      "type": "keyword"
+    }
+  }
+}
+
 ```
 
 ---
