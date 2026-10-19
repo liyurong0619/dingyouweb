@@ -201,13 +201,13 @@ Solution: Containerized Elasticsearch using Docker Compose with a volume-mounted
 
 ---
 
-## Known Issues & Improvement Roadmap
+## Known Issues & Future Improvements (Low priority at current scale)
 
-| Issue | Description | Improvement Direction |
+| Issue | Description | Proposed Improvement |
 |-------|-------------|----------------------|
-| MySQL–ES sync is non-atomic | Data inconsistency when MySQL write succeeds but ES write fails | Introduce MQ or CDC mechanism |
-| No pagination in search | All results are returned at once | Add ES paginated queries |
-| Images stored locally | Cannot scale horizontally | Migrate to object storage (e.g., S3) |
+| Non-atomic sync between MySQL and Elasticsearch | If a write succeeds in MySQL but fails in ES, the two data stores become inconsistent | Use CDC (e.g., Debezium) to capture MySQL binlog changes and sync them to ES asynchronously via Kafka |
+| No pagination in search | The frontend applies no limit; it displays whatever the backend returns | Add ES-side pagination (`page` / `size` with `totalElements` in the response) once the product catalog grows |
+| Images stored on local disk | Prevents horizontal scaling, since multiple servers cannot share the same files | Migrate to object storage such as AWS S3 or Google Cloud Storage |
 
 ---
 
